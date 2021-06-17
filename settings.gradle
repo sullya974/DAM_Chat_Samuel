@@ -1,0 +1,2 @@
+rootProject.name = "DAM Chat"
+include ':app'

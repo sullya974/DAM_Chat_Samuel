@@ -1,0 +1,18 @@
+<resources>
+    <string name="app_name">DAM Chat</string>
+    <string name="enter_email">Enter email</string>
+    <string name="enter_password">Enter password</string>
+    <string name="reset_password">Reset password</string>
+    <string name="login">Login</string>
+    <string name="enter_name">Enter name</string>
+    <string name="confirm_password">Confirm password</string>
+    <string name="signup">Sign Up</string>
+    <string name="don_t_have_an_account">Don\'t have an account?</string>
+    <string name="login_failed">Login failed</string>
+    <string name="enter_valid_email">Enter valid email!</string>
+    <string name="password_mismatch">Password mismatch!</string>
+    <string name="user_created_successfully">User created successfully!</string>
+    <string name="signup_failed">Sign Up failed!</string>
+    <string name="failed_to_update_user">Failed to update profile</string>
+    <string name="access_permission_is_required">Access permission is required</string>
+</resources>

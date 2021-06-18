@@ -29,27 +29,33 @@ public class MainActivity extends AppCompatActivity {
 
         tabLayout = findViewById(R.id.tabMain);
         viewPager = findViewById(R.id.vpMain);
+
+        setViewPager();
     }
 
-    /** 1 Ajout du menu pour accèder au Profile utilisateur **/
+    /**
+     * 1 Ajout du menu pour accèder au Profile utilisateur
+     **/
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         getMenuInflater().inflate(R.menu.menu_main, menu);
         return super.onCreateOptionsMenu(menu);
     }
 
-    /** 2 Ajout de la méthode de gestion du clic dans le menu **/
+    /**
+     * 2 Ajout de la méthode de gestion du clic dans le menu
+     **/
     @Override
     public boolean onOptionsItemSelected(@NonNull MenuItem item) {
         int id = item.getItemId();
-        if(id == R.id.mnuProfile){
+        if (id == R.id.mnuProfile) {
             startActivity(new Intent(MainActivity.this, ProfileActivity.class));
         }
         return super.onOptionsItemSelected(item);
     }
 
     // Adapter pour afficher les fragments dans ViewPager
-    class Adapter extends FragmentPagerAdapter{
+    class Adapter extends FragmentPagerAdapter {
 
         public Adapter(@NonNull @NotNull FragmentManager fm, int behavior) {
             super(fm, behavior);
@@ -59,7 +65,7 @@ public class MainActivity extends AppCompatActivity {
         @NotNull
         @Override
         public Fragment getItem(int position) {
-            switch (position){
+            switch (position) {
                 case 0:
                     ChatFragment chatFragment = new ChatFragment();
                     return chatFragment;
@@ -80,7 +86,7 @@ public class MainActivity extends AppCompatActivity {
     }
 
     //Affiche les tabs
-    void setViewPager(){
+    void setViewPager() {
         tabLayout.addTab(tabLayout.newTab().setCustomView(R.layout.tab_chat));
         tabLayout.addTab(tabLayout.newTab().setCustomView(R.layout.tab_requests));
         tabLayout.addTab(tabLayout.newTab().setCustomView(R.layout.tab_friends));
@@ -94,5 +100,24 @@ public class MainActivity extends AppCompatActivity {
 
         //Attribution adapter au ViewPager
         viewPager.setAdapter(adapter);
+
+        tabLayout.addOnTabSelectedListener(new TabLayout.OnTabSelectedListener() {
+            @Override
+            public void onTabSelected(TabLayout.Tab tab) {
+                viewPager.setCurrentItem(tab.getPosition());
+            }
+
+            @Override
+            public void onTabUnselected(TabLayout.Tab tab) {
+
+            }
+
+            @Override
+            public void onTabReselected(TabLayout.Tab tab) {
+
+            }
+        });
+
+        viewPager.addOnPageChangeListener(new TabLayout.TabLayoutOnPageChangeListener(tabLayout));
     }
 }

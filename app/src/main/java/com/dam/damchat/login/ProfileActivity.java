@@ -17,6 +17,9 @@ import android.widget.ImageView;
 import android.widget.PopupMenu;
 import android.widget.Toast;
 
+import com.bumptech.glide.Glide;
+import com.bumptech.glide.load.engine.DiskCacheStrategy;
+import com.bumptech.glide.request.RequestOptions;
 import com.dam.damchat.R;
 import com.dam.damchat.common.NodesNames;
 import com.google.android.gms.tasks.OnCompleteListener;
@@ -37,30 +40,40 @@ import org.jetbrains.annotations.NotNull;
 import java.util.HashMap;
 
 public class ProfileActivity extends AppCompatActivity {
-    /** 1.1 Variables globales des widgets **/
+    /**
+     * 1.1 Variables globales des widgets
+     **/
     private TextInputEditText etName, etEmail;
     private ImageView ivAvatar;
     private View progressBar; // PB1
 
-    /** 1.2 Variables globales de Firebase **/
+    /**
+     * 1.2 Variables globales de Firebase
+     **/
     private FirebaseUser firebaseUser;
     private DatabaseReference databaseReference;
     private StorageReference fileStorage;
     private FirebaseAuth firebaseAuth;
 
-    /** 1.3 Variables globales pour les URI **/
+    /**
+     * 1.3 Variables globales pour les URI
+     **/
     private Uri localFileUri, serverFileUri;
 
-    /** 2 Méthode pour l'initialisation des composants initUI() **/
-    public void initUI(){
+    /**
+     * 2 Méthode pour l'initialisation des composants initUI()
+     **/
+    public void initUI() {
         etEmail = findViewById(R.id.etEmail);
         etName = findViewById(R.id.etName);
         ivAvatar = findViewById(R.id.ivAvatar);
         progressBar = findViewById(R.id.progressBar); //PB2
     }
 
-    /** 3 Méthode pour l'initialisation des composants Firebase **/
-    public void initFirebase(){
+    /**
+     * 3 Méthode pour l'initialisation des composants Firebase
+     **/
+    public void initFirebase() {
         // Instance pour le storage des images
         fileStorage = FirebaseStorage.getInstance().getReference();
         // Pour vérifier que l'utilisateur est bien connecté
@@ -69,8 +82,27 @@ public class ProfileActivity extends AppCompatActivity {
         // Si l'utilisateur n'est pas vide alors on rempli les champs
     }
 
-    private void initProfileUser(){
-        // A compléter
+    private void initProfileUser() {
+        if (firebaseUser != null) {
+            etName.setText(firebaseUser.getDisplayName());
+            etEmail.setText(firebaseUser.getEmail());
+            serverFileUri = firebaseUser.getPhotoUrl();
+        }
+        if (serverFileUri != null) {
+            RequestOptions options = new RequestOptions()
+                    .centerCrop() // Place l'image redimensionnée au centre
+                    .circleCrop() // Découpe l'image en cercle
+                    .error(R.drawable.ic_user) // image en cas d'erreur
+                    .placeholder(R.drawable.ic_user); // image par défaut
+
+            Glide.with(getApplicationContext())// Contexte utilisation Glide
+                    .load(serverFileUri) // Charge image enregistré
+                    .apply(options) // Applique options en cas d'erreur
+                    .fitCenter() // Resize
+                    .circleCrop()
+                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                    .into(ivAvatar);
+        }
     }
 
     @Override
@@ -82,10 +114,19 @@ public class ProfileActivity extends AppCompatActivity {
         initUI();
         initFirebase();
         initProfileUser();
+
+//        ivAvatar.setOnClickListener(new View.OnClickListener() {
+//            @Override
+//            public void onClick(View v) {
+//                Toast.makeText(ProfileActivity.this, "Koman va?", Toast.LENGTH_SHORT).show();
+//            }
+//        });
     }
 
-    /** 5 Copie des méthodes updateOnlyUser et updateNameAndPhoto
-     * sans oublier de changer le context par celui de l'activité dans laquelle nous sommes **/
+    /**
+     * 5 Copie des méthodes updateOnlyUser et updateNameAndPhoto
+     * sans oublier de changer le context par celui de l'activité dans laquelle nous sommes
+     **/
     private void updateNameOnly() {
         // PB3
         progressBar.setVisibility(View.VISIBLE);
@@ -202,17 +243,17 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-    /** 6 Copie des méthodes pickImage onActityResult et onRequestPermissionResult
+    /**
+     * 6 Copie des méthodes pickImage onActityResult et onRequestPermissionResult
      * Noter que l'on rend privée et que l'on retire les attributs de la méthode pickImage,
      * en effet nous allons l'appeler dans la méthode changeAvatar()  que nous allons créer ci-dessous
-     *
-     * **/
+     **/
     private void pickImage() {
         /**
          *  9 Ajout de la vérification de la permission de parcourir les dossiers du terminal
          * Avant toute chose il faut ajouter la permission dans le manifest
          **/
-        if(ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED){
+        if (ActivityCompat.checkSelfPermission(this, Manifest.permission.READ_EXTERNAL_STORAGE) == PackageManager.PERMISSION_GRANTED) {
             Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
             startActivityForResult(intent, 101);
         } else {
@@ -232,8 +273,8 @@ public class ProfileActivity extends AppCompatActivity {
 
     public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
         super.onRequestPermissionsResult(requestCode, permissions, grantResults);
-        if(requestCode==102){
-            if(grantResults[0]==PackageManager.PERMISSION_GRANTED){
+        if (requestCode == 102) {
+            if (grantResults[0] == PackageManager.PERMISSION_GRANTED) {
                 Intent intent = new Intent(Intent.ACTION_PICK, MediaStore.Images.Media.EXTERNAL_CONTENT_URI);
                 startActivityForResult(intent, 101);
             } else {
@@ -242,14 +283,40 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    /** 7 Ajout de la méthode changeAvatar qui permet à l'utilisateur de changer sa photo de profile
-     * Ne pas oublier de lier le widget de l'image à cette méthode **/
-    public void changeAvatar(View v){
-//       A compléter
+    /**
+     * 7 Ajout de la méthode changeAvatar qui permet à l'utilisateur de changer sa photo de profile
+     * Ne pas oublier de lier le widget de l'image à cette méthode
+     **/
+    public void changeAvatar(View v) {
+        // Vérifie l'existence d'un avatar
+        Toast.makeText(this, "Hello le monde", Toast.LENGTH_SHORT).show();
+        if (serverFileUri == null) {
+            pickImage();
+        } else {
+            PopupMenu popupMenu = new PopupMenu(this, v);
+            popupMenu.getMenuInflater().inflate(R.menu.menu_avatar, popupMenu.getMenu());
+
+            popupMenu.setOnMenuItemClickListener(new PopupMenu.OnMenuItemClickListener() {
+                @Override
+                public boolean onMenuItemClick(MenuItem item) {
+                    int id = item.getItemId();
+
+                    if (id == R.id.mnuModifyAvatar) {
+                        pickImage();
+                    } else if (id == R.id.mnuDeleteAvatar) {
+                        deleteAvatar();
+                    }
+                    return false;
+                }
+            });
+            popupMenu.show();
+        }
     }
 
-    /** 8 Ajout de la méthode deleteAvatar pour supprimer l'image **/
-    private void deleteAvatar(){
+    /**
+     * 8 Ajout de la méthode deleteAvatar pour supprimer l'image
+     **/
+    private void deleteAvatar() {
         // Google Authenticator
         UserProfileChangeRequest request = new UserProfileChangeRequest.Builder()
                 .setDisplayName(etName.getText().toString().trim())
@@ -274,6 +341,20 @@ public class ProfileActivity extends AppCompatActivity {
                                         public void onComplete(@NonNull @org.jetbrains.annotations.NotNull Task<Void> task) {
                                             // Changement du Toast
                                             Toast.makeText(ProfileActivity.this, R.string.avatar_deleted_successfully, Toast.LENGTH_SHORT).show();
+
+                                            RequestOptions options = new RequestOptions()
+                                                    .centerCrop() // Place l'image redimensionnée au centre
+                                                    .circleCrop() // Découpe l'image en cercle
+                                                    .error(R.drawable.ic_user) // image en cas d'erreur
+                                                    .placeholder(R.drawable.ic_user); // image par défaut
+
+                                            Glide.with(getApplicationContext())// Contexte utilisation Glide
+                                                    .load(serverFileUri) // Charge image enregistré
+                                                    .apply(options) // Applique options en cas d'erreur
+                                                    .fitCenter() // Resize
+                                                    .circleCrop()
+                                                    .diskCacheStrategy(DiskCacheStrategy.ALL)
+                                                    .into(ivAvatar);
                                         }
                                     });
 
@@ -286,13 +367,15 @@ public class ProfileActivity extends AppCompatActivity {
                 });
     }
 
-    /** 9 Ajout de la méthode de gestion du clic sur Save **/
-    public void btnSaveClick(View v){
+    /**
+     * 9 Ajout de la méthode de gestion du clic sur Save
+     **/
+    public void btnSaveClick(View v) {
         // Avant d'envoyer les données vers les bases on vérifie que les chamsp du formulaire ne soit pas vide
-        if(etName.getText().toString().trim().equals("")){
+        if (etName.getText().toString().trim().equals("")) {
             etName.setError(getString(R.string.enter_name));
         } else {
-            if(localFileUri != null){
+            if (localFileUri != null) {
                 updateNameAndPhoto();
             } else {
                 updateNameOnly();
@@ -300,8 +383,10 @@ public class ProfileActivity extends AppCompatActivity {
         }
     }
 
-    /** 10 Ajout de la méthode pour bouton signout */
-    public void btnSignOut(View v){
+    /**
+     * 10 Ajout de la méthode pour bouton signout
+     */
+    public void btnSignOut(View v) {
         firebaseAuth.signOut();
         // On renvoie l'utilisateur vers LoginActivity
         startActivity(new Intent(ProfileActivity.this, LoginActivity.class));
@@ -309,7 +394,7 @@ public class ProfileActivity extends AppCompatActivity {
         finish();
     }
 
-    public void btnChangePasswordClick(View v){
+    public void btnChangePasswordClick(View v) {
         startActivity(new Intent(ProfileActivity.this, ChangePasswordActivity.class));
     }
 }

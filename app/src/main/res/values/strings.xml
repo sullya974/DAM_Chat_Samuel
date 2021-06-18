@@ -35,6 +35,7 @@
     <string name="loading_please_wait">Loading, please wait …</string>
     <string name="chat">Chat</string>
     <string name="requests">Requests</string>
+    <string name="friends">Friends</string>
     <string name="find">Find</string>
     <string name="friend_list_will_appear_here">Friend list will appear here</string>
     <string name="friend_request_list_will_appear_here">Friend request list will appear here</string>
@@ -46,6 +47,8 @@
     <string name="request_sent_successfully">Request sent successfully</string>
     <string name="failed_to_sent_friend_request">Failed to send friend request: %1$s</string>
     <string name="no_internet">Check Internet Connection</string>
-    <string name="login_failed">Login failed: %1s</string>
+    <string name="login_failed">Login failed: %1$s</string>
     <string name="defaut_avatar">Defaut avatar</string>
+    <!-- TODO: Remove or change this placeholder text -->
+    <string name="hello_blank_fragment">Hello blank fragment</string>
 </resources>
